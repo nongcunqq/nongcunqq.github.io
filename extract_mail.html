@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Email Extractor</title>
+  <style>
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 20px;
+    }
+
+    .input-group, .output-group {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    textarea {
+      margin-right: 10px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background-color: #007bff;
+      color: white;
+    }
+
+    .btn-secondary {
+      background-color: #6c757d;
+      color: white;
+    }
+
+    .btn-success {
+      background-color: #28a745;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="input-group">
+      <textarea id="input" rows="5" cols="50" placeholder="Enter text here..."></textarea>
+      <button onclick="extractEmails()" class="btn btn-primary">Submit</button>
+      <button onclick="clearInput()" class="btn btn-secondary">Clear</button>
+    </div>
+
+    <div class="output-group">
+      <h2>Extracted Email Addresses:</h2>
+      <textarea id="output" rows="5" cols="50" readonly></textarea>
+      <button onclick="copyOutput()" class="btn btn-success">Copy</button>
+    </div>
+  </div>
+
+  <script>
+    async function extractEmails() {
+      let inputText = document.getElementById("input").value;
+      let emails = inputText.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g);
+      document.getElementById("output").value = JSON.stringify(emails);
+
+      // 提取电子邮件地址后自动复制到粘贴板
+      let outputText = document.getElementById("output").value;
+      await navigator.clipboard.writeText(outputText);
+<!--      alert("Copied to clipboard!");-->
+    }
+
+    function clearInput() {
+      document.getElementById("input").value = "";
+      document.getElementById("output").value = "";
+    }
+  </script>
+</body>
+</html>
