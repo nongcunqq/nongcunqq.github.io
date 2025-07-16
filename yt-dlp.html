@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>yt-dlp 命令生成器</title>
+    <style>
+        /* --- General Styles --- */
+        :root {
+            --bg-dark-primary: #111827; /* gray-900 */
+            --bg-dark-secondary: #1F2937; /* gray-800 */
+            --bg-dark-tertiary: #374151; /* gray-700 */
+            --border-color: #4B5563; /* gray-600 */
+            --text-primary: #E5E7EB; /* gray-200 */
+            --text-secondary: #9CA3AF; /* gray-400 */
+            --text-accent: #4ADE80; /* green-400 */
+            --brand-color: #3B82F6; /* blue-500 */
+            --brand-color-hover: #2563EB; /* blue-600 */
+            --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-dark-primary);
+            color: var(--text-primary);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 1rem;
+            box-sizing: border-box;
+        }
+
+        /* --- Main Container --- */
+        .container {
+            width: 100%;
+            max-width: 48rem; /* 768px */
+            background-color: var(--bg-dark-secondary);
+            border-radius: 1rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            padding: 2rem;
+            box-sizing: border-box;
+        }
+
+        .container > * + * {
+            margin-top: 1.5rem;
+        }
+
+        /* --- Header --- */
+        .header {
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: #FFFFFF;
+            margin: 0;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+        }
+
+        /* --- Form Grid --- */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        .form-column > * + * {
+            margin-top: 1rem;
+        }
+
+        /* --- Form Elements --- */
+        label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        input, select {
+            width: 100%;
+            background-color: var(--bg-dark-tertiary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            box-sizing: border-box;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--brand-color);
+            box-shadow: 0 0 0 2px var(--brand-color);
+        }
+
+        /* --- Command Output --- */
+        .command-output-container {
+            position: relative;
+            background-color: var(--bg-dark-primary);
+            border-radius: 0.5rem;
+            padding: 1rem;
+        }
+
+        #generated-command {
+            font-family: monospace;
+            color: var(--text-accent);
+            word-break: break-all;
+            white-space: pre-wrap;
+        }
+
+        #copy-button {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            background-color: var(--brand-color-hover);
+            color: white;
+            font-weight: bold;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        #copy-button:hover {
+            background-color: #1D4ED8; /* blue-700 */
+        }
+
+        #copy-button:active {
+            transform: scale(0.95);
+        }
+
+        #copy-feedback {
+            font-size: 0.875rem;
+            color: #22C55E; /* green-500 */
+            margin-top: 0.5rem;
+            height: 1.25rem;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        /* --- Responsive Design --- */
+        @media (min-width: 768px) {
+            .form-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .container {
+                padding: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+
+        <div class="header">
+            <h1>yt-dlp 命令生成器</h1>
+            <p>輕鬆自訂您的下載命令並一鍵複製</p>
+        </div>
+
+        <div class="form-grid">
+            <div class="form-column">
+                <div>
+                    <label for="video-url">YouTube 影片網址</label>
+                    <input type="url" id="video-url" value="https://www.youtube.com/watch?v=252cSzk0FPU">
+                </div>
+                <div>
+                    <label for="output-format">輸出路徑與檔名格式</label>
+                    <input type="text" id="output-format" value="downloads/%(title)s.%(ext)s">
+                </div>
+                <div>
+                    <label for="video-quality">影片格式與品質</label>
+                    <input type="text" id="video-quality" value="bestvideo[height<=1080]+bestaudio/best[height<=1080]">
+                </div>
+            </div>
+            <div class="form-column">
+                <div>
+                    <label for="proxy-url">代理伺服器 (可選)</label>
+                    <input type="text" id="proxy-url" placeholder="例如: http://127.0.0.1:1080" value="http://127.0.0.1:1080">
+                </div>
+                <div>
+                    <label for="cookie-browser">從瀏覽器讀取 Cookie (可選)</label>
+                    <select id="cookie-browser">
+                        <option value="">不使用</option>
+                        <option value="firefox" selected>Firefox</option>
+                        <option value="chrome">Chrome</option>
+                        <option value="edge">Edge</option>
+                        <option value="safari">Safari</option>
+                        <option value="opera">Opera</option>
+                        <option value="vivaldi">Vivaldi</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <label>生成的命令</label>
+            <div class="command-output-container">
+                <pre><code id="generated-command"></code></pre>
+                <button id="copy-button">複製</button>
+            </div>
+            <p id="copy-feedback">已成功複製到剪貼簿！</p>
+        </div>
+    </div>
+
+    <script>
+        // DOM 元素選擇器
+        const elements = {
+            videoUrl: document.getElementById('video-url'),
+            outputFormat: document.getElementById('output-format'),
+            videoQuality: document.getElementById('video-quality'),
+            proxyUrl: document.getElementById('proxy-url'),
+            cookieBrowser: document.getElementById('cookie-browser'),
+            generatedCommand: document.getElementById('generated-command'),
+            copyButton: document.getElementById('copy-button'),
+            copyFeedback: document.getElementById('copy-feedback')
+        };
+
+        /**
+         * 根據輸入框的內容生成 yt-dlp 命令
+         */
+        function generateCommand() {
+            const url = elements.videoUrl.value.trim();
+            const output = elements.outputFormat.value.trim();
+            const format = elements.videoQuality.value.trim();
+            const proxy = elements.proxyUrl.value.trim();
+            const cookies = elements.cookieBrowser.value;
+
+            let command = 'yt-dlp';
+
+            if (output) command += ` -o "${output}"`;
+            if (format) command += ` -f "${format}"`;
+            if (proxy) command += ` --proxy ${proxy}`;
+            if (cookies) command += ` --cookies-from-browser ${cookies}`;
+            if (url) command += ` ${url}`;
+
+            elements.generatedCommand.textContent = command;
+        }
+
+        /**
+         * 將生成的命令複製到剪貼簿
+         */
+        function copyToClipboard() {
+            const commandText = elements.generatedCommand.textContent;
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(commandText).then(() => {
+                    showCopyFeedback();
+                }).catch(err => {
+                    console.error('無法使用 navigator.clipboard 複製:', err);
+                    fallbackCopyToClipboard(commandText);
+                });
+            } else {
+                fallbackCopyToClipboard(commandText);
+            }
+        }
+
+        /**
+         * 舊版瀏覽器的剪貼簿複製方法
+         */
+        function fallbackCopyToClipboard(text) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.top = '0';
+            textArea.style.left = '0';
+            textArea.style.opacity = '0';
+
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showCopyFeedback();
+                } else {
+                    console.error('使用 execCommand 複製失敗');
+                    alert('複製失敗，請手動複製。');
+                }
+            } catch (err) {
+                console.error('使用 execCommand 複製時發生錯誤:', err);
+                alert('複製失敗，請手動複製。');
+            }
+
+            document.body.removeChild(textArea);
+        }
+
+        /**
+         * 顯示複製成功的回饋訊息
+         */
+        function showCopyFeedback() {
+            const feedback = elements.copyFeedback;
+            feedback.style.opacity = '1';
+            elements.copyButton.textContent = '已複製!';
+
+            setTimeout(() => {
+                feedback.style.opacity = '0';
+                elements.copyButton.textContent = '複製';
+            }, 2000);
+        }
+
+        // 為所有輸入框和下拉選單添加事件監聽器
+        Object.values(elements).forEach(element => {
+            if (element.tagName === 'INPUT' || element.tagName === 'SELECT') {
+                element.addEventListener('input', generateCommand);
+            }
+        });
+
+        // 為複製按鈕添加點擊事件
+        elements.copyButton.addEventListener('click', copyToClipboard);
+
+        // 頁面載入時，立即生成一次初始命令
+        window.addEventListener('load', generateCommand);
+    </script>
+</body>
+</html>
